@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Match{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" type="text/css" href="/main.css">
+{% endblock %}
+{% block body %}
+    <div id="player1" class="player">
+        <div class="health"></div>
+        <div class="gun">
+            <div class="front"></div>
+        </div>
+    </div>
+    <div id="player2" class="player">
+        <div class="health"></div>
+        <div class="gun">
+            <div class="front"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    <script type="text/javascript" src="{{ asset('/match.js') }}"></script>
+{% endblock %}

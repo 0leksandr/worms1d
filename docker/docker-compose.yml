@@ -1,0 +1,34 @@
+version: "3.2"
+services:
+  php:
+    build: './php/'
+    container_name: worms1d-php
+    ports:
+      - '80:8000'
+    volumes:
+      - ../:/app/
+    working_dir: /app/
+#  apache:
+#    build: './apache/'
+#    container_name: worms1d-apache
+#    depends_on:
+#      - php
+#      - mysql
+#    ports:
+#      - '80:80'
+#    volumes:
+#      - ../public/:/var/www/html/
+#      - ../var/log/apache.log:/var/log/apache.log
+#    working_dir: /var/www/html/
+  mysql:
+    image: mysql:5.7.28
+    container_name: worms1d-mysql
+    environment:
+      - TZ=Europe/Kiev
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_USER=testuser
+      - MYSQL_PASSWORD=testpassword
+      - MYSQL_DATABASE=testdb
+    volumes:
+      - ../var/mysql:/var/lib/mysql
