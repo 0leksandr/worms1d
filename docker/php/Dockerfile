@@ -1,11 +1,11 @@
-FROM php:7.4.1-fpm-alpine3.11
-RUN apk update; \
-    apk upgrade;
-RUN docker-php-ext-install pdo pdo_mysql mysqli
-RUN apk add composer yarn
+FROM php:7.4.1-fpm
+RUN apt-get update ;\
+    apt-get upgrade -y
+RUN apt-get install -y git
+RUN curl -sS https://getcomposer.org/installer | php ;\
+    mv composer.phar /usr/local/bin/composer
 
-#RUN apk add zlib-dev icu-dev g++
-RUN apk add icu-dev
-RUN docker-php-ext-configure intl && \
-    docker-php-ext-install intl
-RUN adduser -D _www
+RUN adduser --disabled-password --force-badname _www
+
+RUN pecl install mongodb
+RUN docker-php-ext-enable mongodb

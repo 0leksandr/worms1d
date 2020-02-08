@@ -8,27 +8,13 @@ services:
     volumes:
       - ../:/app/
     working_dir: /app/
-#  apache:
-#    build: './apache/'
-#    container_name: worms1d-apache
-#    depends_on:
-#      - php
-#      - mysql
-#    ports:
-#      - '80:80'
-#    volumes:
-#      - ../public/:/var/www/html/
-#      - ../var/log/apache.log:/var/log/apache.log
-#    working_dir: /var/www/html/
   mysql:
-    image: mysql:5.7.28
-    container_name: worms1d-mysql
+    image: mongo:4.2.3-bionic
+    container_name: worms1d-mongo
+    ports:
+      - '27017:27017'
     environment:
-      - TZ=Europe/Kiev
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_ROOT_PASSWORD=
-      - MYSQL_USER=testuser
-      - MYSQL_PASSWORD=testpassword
-      - MYSQL_DATABASE=testdb
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=root
     volumes:
-      - ../var/mysql:/var/lib/mysql
+      - ../var/mongo:/data/db
