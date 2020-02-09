@@ -9,3 +9,6 @@ RUN adduser --disabled-password --force-badname _www
 
 RUN pecl install mongodb
 RUN docker-php-ext-enable mongodb
+
+RUN apt-get install -y libzip-dev zip && \
+    docker-php-ext-install zip

@@ -4,11 +4,11 @@ services:
     build: './php/'
     container_name: worms1d-php
     ports:
-      - '80:8000'
+      - '6150:6150'
     volumes:
       - ../:/app/
     working_dir: /app/
-  mysql:
+  mongo:
     image: mongo:4.2.3-bionic
     container_name: worms1d-mongo
     ports:

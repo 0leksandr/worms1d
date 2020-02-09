@@ -1,7 +1,3 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
-
-game:
-    path: /game
-    controller: App\Controller\GameController::index
