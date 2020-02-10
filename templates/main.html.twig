@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Main menu{% endblock %}
+
+{% block body %}
+    <ul>
+        <li>
+            <a href="{{ path('game') }}">Play!</a>
+        </li>
+        <li>
+            <a href="{{ path('leaderboard') }}">Leaderboard</a>
+        </li>
+    </ul>
+{% endblock %}

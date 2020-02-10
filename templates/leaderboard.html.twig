@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Leaderboard{% endblock %}
+
+{% block body %}
+    <ol>
+        {% for user in leaders %}
+            <li>{{ user.login }} ({{ user.score }})</li>
+        {% endfor %}
+    </ol>
+{% endblock %}

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Document\Match;
 use App\Document\Missile;
 use App\Document\Player;
+use App\Document\User;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\DocumentNotFoundException;
 use Doctrine\ODM\MongoDB\MongoDBException;
@@ -34,13 +35,13 @@ class ApiController extends AbstractController
      */
     public function start(Request $request): JsonResponse
     {
-        $login = $request->get('login');
+        $login = $request->cookies->get('login');
         $matchRepo = $this->dm->getRepository(Match::class);
         if (!$match = $matchRepo->findOneBy(['player1.login' => $login])) {
             if (!$match = $matchRepo->findOneBy(['player2.login' => $login])) {
                 $player1 = (new Player())
                     ->setNr(1)
-                    ->setLogin('test1')
+                    ->setLogin($login)
                     ->setX(100)
                     ->setY(100)
                     ->setHealth(100);
@@ -66,11 +67,13 @@ class ApiController extends AbstractController
         return new JsonResponse([
             'match_id' => $match->getId(),
             'player1' => [
+                'login'  => $match->getPlayer1()->getLogin(),
                 'x'      => $match->getPlayer1()->getX(),
                 'y'      => $match->getPlayer1()->getY(),
                 'health' => $match->getPlayer1()->getHealth(),
             ],
             'player2' => [
+                'login'  => $match->getPlayer2()->getLogin(),
                 'x'      => $match->getPlayer2()->getX(),
                 'y'      => $match->getPlayer2()->getY(),
                 'health' => $match->getPlayer2()->getHealth(),
@@ -117,11 +120,7 @@ class ApiController extends AbstractController
      */
     public function remove(Request $request): Response
     {
-        $missile = $this
-            ->dm
-            ->getRepository(Missile::class)
-            ->find($request->get('missile_id'));
-        $this->dm->remove($missile);
+        $this->dm->remove($this->dm->find(Missile::class, $request->get('missile_id')));
         $this->dm->flush();
 
         return new Response();
@@ -136,7 +135,7 @@ class ApiController extends AbstractController
     public function hit(Request $request): Response
     {
         $matchId = $request->get('match_id');
-        $match = $this->dm->getRepository(Match::class)->find($matchId);
+        $match = $this->dm->find(Match::class, $matchId);
         if (!$match) {
             throw new DocumentNotFoundException("Match {$matchId} not found");
         }
@@ -160,8 +159,19 @@ class ApiController extends AbstractController
      */
     public function stop(Request $request): Response
     {
-        $this->dm->remove($this->dm->getRepository(Match::class)->find($request->get('match_id')));
+        $matchId = $request->get('match_id');
+        $match = $this->dm->find(Match::class, $matchId);
+        if (!$match) {
+            throw new DocumentNotFoundException("Match {$matchId} not found");
+        }
+        $winner = $request->get('killed') === '1' ? $match->getPlayer2() : $match->getPlayer1();
+        $winner = $this->dm->getRepository(User::class)->findOneBy(['login' => $winner->getLogin()]);
+        $winner->setScore($winner->getScore() + 1);
+
+        $this->dm->persist($winner);
+        $this->dm->remove($match);
         $this->dm->flush();
+
         return new Response();
     }
 }

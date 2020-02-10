@@ -7,12 +7,14 @@
 {% endblock %}
 {% block body %}
     <div id="player1" class="player">
+        <div class="login"></div>
         <div class="health"></div>
         <div class="gun">
             <div class="front"></div>
         </div>
     </div>
     <div id="player2" class="player">
+        <div class="login"></div>
         <div class="health"></div>
         <div class="gun">
             <div class="front"></div>
@@ -20,5 +22,6 @@
     </div>
 {% endblock %}
 {% block javascripts %}
+    {{ parent() }}
     <script type="text/javascript" src="{{ asset('/match.js') }}"></script>
 {% endblock %}

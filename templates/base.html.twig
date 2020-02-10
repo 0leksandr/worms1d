@@ -6,6 +6,10 @@
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
+        <div id="main-nav">
+            <a href="{{ path('main') }}">Main menu</a>
+            <a href="{{ path('logout') }}">Logout</a>
+        </div>
         {% block body %}{% endblock %}
         {% block javascripts %}{% endblock %}
     </body>

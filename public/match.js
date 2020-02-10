@@ -3,7 +3,7 @@
 const players = [];
 let matchId = null;
 
-const player = (nr, x, y, health = 100) => {
+const player = (nr, login, x, y, health = 100) => {
     const width = 50, height = 50;
     const windowWidth  = window.innerWidth;
     const windowHeight = window.innerHeight;
@@ -12,6 +12,7 @@ const player = (nr, x, y, health = 100) => {
     const element = document.querySelector(selector);
     element.style.top = `${(windowHeight - height / 2 - y)}px`;
     element.style.left = `${(x - width / 2)}px`;
+    document.querySelector(`${selector} .login`).innerHTML = login;
     updateHealthBar();
 
     function updateHealthBar() {
@@ -20,12 +21,11 @@ const player = (nr, x, y, health = 100) => {
     function damage(x) {
         health -= x;
         if (health <= 0) {
-            ajax(`/api/stop?match_id=${matchId}`);
             alert("Game over");
-            window.location.reload();
+            ajax(`stop?match_id=${matchId}&killed=${nr}`, () => window.location.reload());
         }
         updateHealthBar();
-        ajax(`/api/hit?match_id=${matchId}&player=${nr}`);
+        ajax(`hit?match_id=${matchId}&player=${nr}`);
     }
 
     const gun = (() => {
@@ -48,7 +48,7 @@ const player = (nr, x, y, health = 100) => {
             let id   = null;
             let time = Date.now();
             ajax(
-                `/api/shot?match_id=${matchId}&time=${time}&sx=${sx}&sy=${sy}&shooter_nr=${nr}`,
+                `shot?match_id=${matchId}&time=${time}&sx=${sx}&sy=${sy}&shooter_nr=${nr}`,
                 response => {
                     id = JSON.parse(response)["missile_id"];
                 }
@@ -66,7 +66,7 @@ const player = (nr, x, y, health = 100) => {
             function remove() {
                 clearInterval(i);
                 document.body.removeChild(element);
-                if (id()) ajax(`/api/remove?missile_id=${id()}`);
+                if (id()) ajax(`remove?missile_id=${id()}`);
             }
 
             i = window.setInterval(
@@ -99,9 +99,9 @@ const player = (nr, x, y, health = 100) => {
     return player;
 };
 
-function ajax(url, callback) {
+function ajax(uri, callback) {
     const Http = new XMLHttpRequest();
-    Http.open("GET", url);
+    Http.open("GET", "/api/" + uri);
     Http.send();
 
     Http.onreadystatechange = function () {
@@ -111,19 +111,14 @@ function ajax(url, callback) {
     }
 }
 
-function getCookieValue(a) {
-    const b = document.cookie.match('(^|[^;]+)\\s*' + a + '\\s*=\\s*([^;]+)');
-    return b ? b.pop() : '';
-}
-
-ajax("/api/start?login=test1", response => {
+ajax("start", response => {
     response = JSON.parse(response);
     console.log(response); // TODO: remove
     const p1 = response["player1"];
     const p2 = response["player2"];
 
-    const player1 = player(1, p1["x"], p1["y"], p1["health"]);
-    const player2 = player(2, p2["x"], p2["y"], p2["health"]);
+    const player1 = player(1, p1["login"], p1["x"], p1["y"], p1["health"]);
+    const player2 = player(2, p2["login"], p2["x"], p2["y"], p2["health"]);
 
     matchId = response['match_id'];
 
