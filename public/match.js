@@ -18,6 +18,7 @@ const player = (nr, login, x, y, health = 100) => {
 
     function updateHealthBar() {
         document.querySelector(`${selector} .health`).style.width = `${(70 * health / 100)}px`;
+        ajax(`health?match_id=${matchId}&player=${nr}&health=${health}`);
     }
     function damage(x) {
         health -= x;
@@ -26,7 +27,6 @@ const player = (nr, login, x, y, health = 100) => {
             ajax(`stop?match_id=${matchId}&killed=${nr}`, () => window.location.reload());
         }
         updateHealthBar();
-        ajax(`hit?match_id=${matchId}&player=${nr}`);
     }
 
     const gun = (() => {

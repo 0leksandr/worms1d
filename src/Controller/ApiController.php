@@ -114,24 +114,26 @@ class ApiController extends AbstractController
     }
 
     /**
-     * @Route("/hit", name="hit")
+     * @Route("/health", name="health")
      * @param Request $request
      * @return Response
+     * @throws DocumentNotFoundException
      * @throws MongoDBException
      */
-    public function hit(Request $request): Response
+    public function health(Request $request): Response
     {
         $matchId = $request->get('match_id');
-        $match = $this->dm->find(Match::class, $matchId);
+        $match   = $this->dm->find(Match::class, $matchId);
         if (!$match) {
             throw new DocumentNotFoundException("Match {$matchId} not found");
         }
-        /** @var Player $player */
-        $player = $request->get('player') === '1' ? $match->getPlayer1() : $match->getPlayer2();
-        $player->setHealth($player->getHealth() - 10);
+        $health = $request->get('health');
+        if ($request->get('player') === '1') {
+            $match->setPlayer1Health($health);
+        } else {
+            $match->setPlayer2Health($health);
+        }
 
-        $this->dm->remove($match);
-        $this->dm->flush();
         $this->dm->persist($match);
         $this->dm->flush();
 
@@ -184,13 +186,13 @@ class ApiController extends AbstractController
                 'login'  => $match->getPlayer1()->getLogin(),
                 'x'      => $match->getPlayer1()->getX(),
                 'y'      => $match->getPlayer1()->getY(),
-                'health' => $match->getPlayer1()->getHealth(),
+                'health' => $match->getPlayer1Health(),
             ],
             'player2'  => [
                 'login'  => $match->getPlayer2()->getLogin(),
                 'x'      => $match->getPlayer2()->getX(),
                 'y'      => $match->getPlayer2()->getY(),
-                'health' => $match->getPlayer2()->getHealth(),
+                'health' => $match->getPlayer2Health(),
             ],
             'missiles' => array_map(
                 fn (Missile $missile) => [
@@ -217,17 +219,17 @@ class ApiController extends AbstractController
             ->setNr(1)
             ->setLogin($user1Login)
             ->setX(100)
-            ->setY(100)
-            ->setHealth(100);
+            ->setY(100);
         $player2 = (new Player())
             ->setNr(2)
             ->setLogin($user2Login)
             ->setX(-200)
-            ->setY(100)
-            ->setHealth(100);
+            ->setY(100);
         $match = (new Match())
             ->setPlayer1($player1)
-            ->setPlayer2($player2);
+            ->setPlayer1Health(100)
+            ->setPlayer2($player2)
+            ->setPlayer2Health(100);
         $this->dm->persist($match);
         $this->dm->flush();
 

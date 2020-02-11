@@ -34,11 +34,6 @@ class Player
      */
     private $y;
 
-    /**
-     * @MongoDB\Field(type="int")
-     */
-    private $health;
-
     public function getId()
     {
         return $this->id;
@@ -64,11 +59,6 @@ class Player
         return $this->y;
     }
 
-    public function getHealth(): ?int
-    {
-        return $this->health;
-    }
-
     public function setLogin(string $login): self
     {
         $this->login = $login;
@@ -90,12 +80,6 @@ class Player
     public function setY(int $y): self
     {
         $this->y = $y;
-        return $this;
-    }
-
-    public function setHealth(int $health): self
-    {
-        $this->health = $health;
         return $this;
     }
 }

@@ -24,6 +24,16 @@ class Match
      */
     private $player2;
 
+    /**
+     * @MongoDB\Field(type="int")
+     */
+    private $player1Health;
+
+    /**
+     * @MongoDB\Field(type="int")
+     */
+    private $player2Health;
+
     public function getId(): string
     {
         return $this->id;
@@ -48,6 +58,28 @@ class Match
     public function setPlayer2(Player $player2): self
     {
         $this->player2 = $player2;
+        return $this;
+    }
+
+    public function getPlayer1Health(): int
+    {
+        return $this->player1Health;
+    }
+
+    public function getPlayer2Health(): int
+    {
+        return $this->player2Health;
+    }
+
+    public function setPlayer1Health(int $player1Health): self
+    {
+        $this->player1Health = $player1Health;
+        return $this;
+    }
+
+    public function setPlayer2Health(int $player2Health): self
+    {
+        $this->player2Health = $player2Health;
         return $this;
     }
 }
