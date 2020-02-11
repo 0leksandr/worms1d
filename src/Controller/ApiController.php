@@ -43,24 +43,8 @@ class ApiController extends AbstractController
                     if ($user1->getLogin() !== $login) {
                         $user1->setAwait(false);
                         $this->dm->persist($user1);
-
-                        $player1 = (new Player())
-                            ->setNr(1)
-                            ->setLogin($user1->getLogin())
-                            ->setX(100)
-                            ->setY(100)
-                            ->setHealth(100);
-                        $player2 = (new Player())
-                            ->setNr(2)
-                            ->setLogin($login)
-                            ->setX(1000)
-                            ->setY(100)
-                            ->setHealth(100);
-                        $match = (new Match())
-                            ->setPlayer1($player1)
-                            ->setPlayer2($player2);
-                        $this->dm->persist($match);
                         $this->dm->flush();
+                        $match = $this->startMatch($user1->getLogin(), $login);
                     }
                 }
             }
@@ -78,6 +62,19 @@ class ApiController extends AbstractController
             return new JsonResponse(['await' => true]);
         }
 
+        return new JsonResponse(['match_id' => $match->getId()]);
+    }
+
+    /**
+     * @Route("/bot", name="bot")
+     * @param Request $request
+     * @return JsonResponse
+     * @throws MongoDBException
+     */
+    public function bot(Request $request): JsonResponse
+    {
+        $login = $request->cookies->get('login');
+        $match = $this->startMatch($login, 'bot');
         return new JsonResponse(['match_id' => $match->getId()]);
     }
 
@@ -206,5 +203,34 @@ class ApiController extends AbstractController
                 $this->dm->getRepository(Missile::class)->findBy(['matchId' => $matchId])
             ),
         ]);
+    }
+
+    /**
+     * @param string $user1Login
+     * @param string $user2Login
+     * @return Match
+     * @throws MongoDBException
+     */
+    private function startMatch(string $user1Login, string $user2Login): Match
+    {
+        $player1 = (new Player())
+            ->setNr(1)
+            ->setLogin($user1Login)
+            ->setX(100)
+            ->setY(100)
+            ->setHealth(100);
+        $player2 = (new Player())
+            ->setNr(2)
+            ->setLogin($user2Login)
+            ->setX(-200)
+            ->setY(100)
+            ->setHealth(100);
+        $match = (new Match())
+            ->setPlayer1($player1)
+            ->setPlayer2($player2);
+        $this->dm->persist($match);
+        $this->dm->flush();
+
+        return $match;
     }
 }

@@ -7,6 +7,7 @@ const player = (nr, login, x, y, health = 100) => {
     const width = 50, height = 50;
     const windowWidth  = window.innerWidth;
     const windowHeight = window.innerHeight;
+    if (x < 0) x = windowWidth + x;
 
     const selector = `#player${nr}`;
     const element = document.querySelector(selector);
@@ -128,11 +129,18 @@ const i = window.setInterval(
             'Waiting for opponent' + Array(Math.round(Date.now() / 1000) % 3 + 1).fill('.').join('');
         ajax("start", response => {
             response = JSON.parse(response);
-            if (!response['await']) {
+            if (response['match_id']) {
                 window.clearInterval(i);
                 matchId = response['match_id'];
             }
         });
+        document.querySelector("#bot").onclick = () => {
+            window.clearInterval(i);
+            ajax("bot", response => {
+                matchId = response['match_id'];
+                window.location.reload();
+            });
+        };
     },
     500
 );
@@ -169,6 +177,11 @@ window.setInterval(
                 const _player        = response['login'] === p1['login'] ? player1 : player2;
                 document.onmousemove = evt => _player.gun.move(evt.x, window.innerHeight - evt.y);
                 document.onmousedown = () => _player.gun.shoot();
+
+                if (p2['login'] === 'bot') {
+                    player2.gun.move(Math.random() * 1000, Math.random() * 500);
+                    player2.gun.shoot();
+                }
             });
         }
     },
