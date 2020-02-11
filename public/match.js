@@ -31,6 +31,7 @@ const player = (nr, login, x, y, health = 100) => {
     const gun = (() => {
         let angle = 0;
         let gx, gy;
+        const missileIds = [];
         function move(cx, cy) {
             gx = cx;
             gy = cy;
@@ -54,19 +55,26 @@ const player = (nr, login, x, y, health = 100) => {
                 }
             );
 
-            shooted(() => id, time, sx, sy);
+            launched(() => id, time, sx, sy);
         }
-        function shooted(id, time, sx, sy) {
+        function launched(id, time, sx, sy) {
             const dynamic = 1 / 50;
             const element = document.createElement("div");
             element.className = "missile";
             document.body.appendChild(element);
 
+            if (id()) missileIds.push(id());
+
             let i;
             function remove() {
                 clearInterval(i);
                 document.body.removeChild(element);
-                if (id()) ajax(`remove?missile_id=${id()}`);
+                if (id()) {
+                    const index = missileIds.indexOf(id());
+                    if (index !== -1) missileIds.splice(index, 1);
+
+                    ajax(`remove?missile_id=${id()}`);
+                }
             }
 
             i = window.setInterval(
@@ -91,7 +99,10 @@ const player = (nr, login, x, y, health = 100) => {
                 1
             );
         }
-        return {move, shoot, shooted};
+        function has(id) {
+            return missileIds.includes(id);
+        }
+        return {move, shoot, launched, has};
     })();
 
     const player = {x, y, gun, damage, nr};
@@ -111,32 +122,55 @@ function ajax(uri, callback) {
     }
 }
 
-ajax("start", response => {
-    response = JSON.parse(response);
-    console.log(response); // TODO: remove
-    const p1 = response["player1"];
-    const p2 = response["player2"];
+const i = window.setInterval(
+    () => {
+        document.querySelector('#message').innerHTML =
+            'Waiting for opponent' + Array(Math.round(Date.now() / 1000) % 3 + 1).fill('.').join('');
+        ajax("start", response => {
+            response = JSON.parse(response);
+            if (!response['await']) {
+                window.clearInterval(i);
+                matchId = response['match_id'];
+            }
+        });
+    },
+    500
+);
 
-    const player1 = player(1, p1["login"], p1["x"], p1["y"], p1["health"]);
-    const player2 = player(2, p2["login"], p2["x"], p2["y"], p2["health"]);
-
-    matchId = response['match_id'];
-
-    response['missiles'].forEach(missile => {
-        players[+ missile['shooter_nr'] - 1].gun.shooted(
-            () => missile['id'],
-            missile['time'],
-            missile['sx'],
-            missile['sy'],
-        );
+function launched(missiles) {
+    missiles.forEach(missile => {
+        const player = players[+missile['shooter_nr'] - 1];
+        if (!player.gun.has(missile['id'])) {
+            player.gun.launched(
+                () => missile['id'],
+                missile['time'],
+                missile['sx'],
+                missile['sy'],
+            );
+        }
     });
+}
 
-    document.onmousemove = evt => {
-        player1.gun.move(evt.x, window.innerHeight - evt.y);
-        player2.gun.move(evt.x, window.innerHeight - evt.y);
-    };
-    document.onmousedown = () => {
-        player1.gun.shoot();
-        player2.gun.shoot();
-    };
-});
+window.setInterval(
+    () => {
+        if (matchId) {
+            ajax(`update?match_id=${matchId}`, response => {
+                response = JSON.parse(response);
+
+                const p1 = response["player1"];
+                const p2 = response["player2"];
+
+                const player1 = player(1, p1["login"], p1["x"], p1["y"], p1["health"]);
+                const player2 = player(2, p2["login"], p2["x"], p2["y"], p2["health"]);
+
+                matchId = response['match_id'];
+                launched(response['missiles']);
+
+                const _player        = response['login'] === p1['login'] ? player1 : player2;
+                document.onmousemove = evt => _player.gun.move(evt.x, window.innerHeight - evt.y);
+                document.onmousedown = () => _player.gun.shoot();
+            });
+        }
+    },
+    500
+);

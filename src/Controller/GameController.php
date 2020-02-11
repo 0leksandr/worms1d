@@ -108,9 +108,14 @@ class GameController extends AbstractController
 
     /**
      * @Route("/game", name="game")
+     * @param Request $request
+     * @return Response
      */
-    public function game(): Response
+    public function game(Request $request): Response
     {
+        if (!$request->cookies->has(self::COOKIE_LOGIN)) {
+            return new RedirectResponse($this->generateUrl('login_form'));
+        }
         return $this->render('game.html.twig');
     }
 

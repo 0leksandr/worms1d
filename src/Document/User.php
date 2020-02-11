@@ -29,6 +29,11 @@ class User
      */
     private $achievements;
 
+    /**
+     * @MongoDB\Field(type="bool")
+     */
+    private $await;
+
     public function getId(): string
     {
         return $this->id;
@@ -64,6 +69,17 @@ class User
     public function setAchievements(array $achievements): self
     {
         $this->achievements = $achievements;
+        return $this;
+    }
+
+    public function getAwait(): bool
+    {
+        return $this->await;
+    }
+
+    public function setAwait(bool $await): self
+    {
+        $this->await = $await;
         return $this;
     }
 }
